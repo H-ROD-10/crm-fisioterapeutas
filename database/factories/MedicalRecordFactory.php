@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Patient;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,13 +19,13 @@ class MedicalRecordFactory extends Factory
     public function definition(): array
     {
         return [
-            'allergies' => $this->faker->sentence,
-            'pathologies' => $this->faker->sentence,
-            'medications' => $this->faker->sentence,
-            'past_surgeries' => $this->faker->sentence,
-            'notes_general' => $this->faker->sentence,
-            'patient_id' => $this->faker->numberBetween(1, 10),
-            'fisioterapeuta_id' => $this->faker->numberBetween(1, 10),
+            'allergies' => $this->faker->optional()->text(100),
+            'pathologies' => $this->faker->optional()->text(100),
+            'medications' => $this->faker->optional()->text(100),
+            'past_surgeries' => $this->faker->optional()->text(100),
+            'notes_general' => $this->faker->optional()->text(100),
+            'patient_id' => Patient::factory(),
+            'fisioterapeuta_id' => User::factory(),
         ];
     }
 }

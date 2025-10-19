@@ -17,4 +17,15 @@ class MedicalService extends Model
         'image',
         'duration',
     ];
+
+    // Relaciones
+
+    /**
+     * Un Servicio Médico puede ser usado en muchas Sesiones (relación muchos a muchos)
+     */
+    public function sessions()
+    {
+        return $this->belongsToMany(SessionTherapy::class, 'session_service', 'medical_service_id', 'session_therapy_id')
+                    ->withTimestamps();
+    }
 }

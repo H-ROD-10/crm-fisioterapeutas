@@ -19,4 +19,34 @@ class MedicalRecord extends Model
         'patient_id',
         'fisioterapeuta_id',
     ];
+
+    /**
+     * Obtener el título descriptivo del historial médico
+     */
+    public function getTitleAttribute(): string
+    {
+        $patientName = $this->patient 
+            ? $this->patient->name . ' ' . $this->patient->last_name 
+            : 'Sin paciente';
+        
+        return "Historial Médico: {$patientName}";
+    }
+
+    // Relaciones
+
+    /**
+     * El Historial Médico pertenece a un Paciente
+     */
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class);
+    }
+
+    /**
+     * El Historial Médico es gestionado por un Fisioterapeuta
+     */
+    public function fisioterapeuta()
+    {
+        return $this->belongsTo(User::class, 'fisioterapeuta_id');
+    }
 }

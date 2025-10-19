@@ -46,4 +46,38 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Relaciones
+
+    /**
+     * Un Fisioterapeuta puede tener muchos Pacientes asignados
+     */
+    public function patients()
+    {
+        return $this->hasMany(Patient::class, 'fisioterapeuta_id');
+    }
+
+    /**
+     * Un Fisioterapeuta realiza muchas Citas
+     */
+    public function appointments()
+    {
+        return $this->hasMany(Appoinment::class, 'fisioterapeuta_id');
+    }
+
+    /**
+     * Un Fisioterapeuta puede gestionar muchos Historiales Médicos
+     */
+    public function medicalRecords()
+    {
+        return $this->hasMany(MedicalRecord::class, 'fisioterapeuta_id');
+    }
+
+    /**
+     * Un Fisioterapeuta puede gestionar muchos Tratamientos
+     */
+    public function treatments()
+    {
+        return $this->hasMany(Treatment::class, 'fisioterapeuta_id');
+    }
 }

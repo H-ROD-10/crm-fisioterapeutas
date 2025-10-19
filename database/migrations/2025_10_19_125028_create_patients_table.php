@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('gender')->nullable();
             $table->string('dni')->unique();
             $table->string('photo')->nullable();
+            $table->foreignId('fisioterapeuta_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

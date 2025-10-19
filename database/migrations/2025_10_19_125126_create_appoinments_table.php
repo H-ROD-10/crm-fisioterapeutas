@@ -17,7 +17,7 @@ return new class extends Migration
             $table->dateTime('end_time');
             $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending');
             $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('fisioterapeuta_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('fisioterapeuta_id')->constrained('users')->cascadeOnDelete();
             $table->text('notes')->nullable();
             $table->timestamps();
         });

@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Patient;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,8 +18,17 @@ class TreatmentFactory extends Factory
      */
     public function definition(): array
     {
+        $startDate = $this->faker->dateTimeBetween('-1 month', 'now');
+        $endDate = $this->faker->dateTimeBetween($startDate, '+3 months');
+
         return [
-            //
+            'name' => $this->faker->words(3, true),
+            'description' => $this->faker->text(100),
+            'status' => $this->faker->randomElement(['pending', 'completed', 'cancelled']),
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d'),
+            'patient_id' => Patient::factory(),
+            'fisioterapeuta_id' => User::factory(),
         ];
     }
 }

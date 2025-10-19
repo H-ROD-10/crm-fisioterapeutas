@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('treatments', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('description');
+            $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending');
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->foreignId('patient_id')->constrained('patients')->cascadeOnDelete();
+            $table->foreignId('fisioterapeuta_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

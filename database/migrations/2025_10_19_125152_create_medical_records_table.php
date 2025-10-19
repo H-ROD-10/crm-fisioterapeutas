@@ -18,8 +18,8 @@ return new class extends Migration
             $table->text('medications')->nullable();
             $table->text('past_surgeries')->nullable();
             $table->text('notes_general')->nullable();
-            $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('fisioterapeuta_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('patient_id')->constrained('patients')->cascadeOnDelete();
+            $table->foreignId('fisioterapeuta_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Patient;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,13 +18,16 @@ class AppoinmentFactory extends Factory
      */
     public function definition(): array
     {
+        $startTime = $this->faker->dateTimeBetween('-1 week', '+1 week');
+        $endTime = (clone $startTime)->modify('+' . $this->faker->numberBetween(30, 120) . ' minutes');
+
         return [
-            'start_time' => $this->faker->dateTimeBetween('-1 week', '+1 week'),
-            'end_time' => $this->faker->dateTimeBetween('-1 week', '+1 week'),
+            'start_time' => $startTime,
+            'end_time' => $endTime,
             'status' => $this->faker->randomElement(['pending', 'completed', 'cancelled']),
-            'patient_id' => $this->faker->numberBetween(1, 10),
-            'fisioterapeuta_id' => $this->faker->numberBetween(1, 10),
-            'notes'=> $this->faker->sentence(),
+            'patient_id' => Patient::factory(),
+            'fisioterapeuta_id' => User::factory(),
+            'notes' => $this->faker->optional()->text(100),
         ];
     }
 }
