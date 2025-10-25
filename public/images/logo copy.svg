@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="60" viewBox="0 0 300 60">
+  <circle cx="30" cy="30" r="25" fill="black"/>
+  <path d="M20,10 C20,10 25,15 30,30 C35,45 40,50 40,50" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M25,10 C25,10 30,15 35,30 C40,45 45,50 45,50" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text x="65" y="40" font-family="Arial, sans-serif" font-weight="bold" font-size="28">DEMOFISIO</text>
+</svg>
