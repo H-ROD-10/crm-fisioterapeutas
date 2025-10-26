@@ -16,6 +16,7 @@ class Appoinment extends Model
         'status',
         'patient_id',
         'fisioterapeuta_id',
+        'medical_service_id',
         'notes',
     ];
 
@@ -53,6 +54,14 @@ class Appoinment extends Model
     public function fisioterapeuta()
     {
         return $this->belongsTo(User::class, 'fisioterapeuta_id');
+    }
+
+    /**
+     * Una Cita pertenece a un Servicio Médico
+     */
+    public function medicalService()
+    {
+        return $this->belongsTo(MedicalService::class, 'medical_service_id');
     }
 
     /**

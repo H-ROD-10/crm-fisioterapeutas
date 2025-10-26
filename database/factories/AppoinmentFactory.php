@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\MedicalService;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -25,8 +26,9 @@ class AppoinmentFactory extends Factory
             'start_time' => $startTime,
             'end_time' => $endTime,
             'status' => $this->faker->randomElement(['pending', 'completed', 'cancelled']),
-            'patient_id' => Patient::factory(),
-            'fisioterapeuta_id' => User::factory(),
+            'patient_id' => fn () => Patient::query()->inRandomOrder()->value('id') ?? Patient::factory(),
+            'medical_service_id' => fn () => MedicalService::query()->inRandomOrder()->value('id') ?? MedicalService::factory(),
+            'fisioterapeuta_id' => fn () => User::query()->inRandomOrder()->value('id') ?? User::factory(),
             'notes' => $this->faker->optional()->text(100),
         ];
     }

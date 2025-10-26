@@ -27,8 +27,8 @@ class TreatmentFactory extends Factory
             'status' => $this->faker->randomElement(['pending', 'completed', 'cancelled']),
             'start_date' => $startDate->format('Y-m-d'),
             'end_date' => $endDate->format('Y-m-d'),
-            'patient_id' => Patient::factory(),
-            'fisioterapeuta_id' => User::factory(),
+            'patient_id' => fn () => Patient::query()->inRandomOrder()->value('id') ?? Patient::factory(),
+            'fisioterapeuta_id' => fn () => User::query()->inRandomOrder()->value('id') ?? User::factory(),
         ];
     }
 }

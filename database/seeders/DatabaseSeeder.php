@@ -19,19 +19,38 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-    public function run(): void
+   public function run(): void
     {
-         //User::factory(5)->create();
-         //MedicalService::factory(5)->create();
-         //Patient::factory(15)->create();
-         //Appoinment::factory(25)->create();
-         //MedicalRecord::factory(10)->create();  
-         //Treatment::factory(10)->create();
-         SessionTherapy::factory(40)->create();
+        // 1) Servicios, usuarios, pacientes
+        MedicalService::factory()->count(6)->create();
+        User::factory()->count(5)->create();      // fisioterapeutas
+        Patient::factory()->count(20)->create();
 
-       /*  User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]); */
+        // 2) Tratamientos
+        Treatment::factory()->count(15)->create();
+
+        // 3) Citas (usa la factory ajustada con medical_service_id)
+        Appoinment::factory()->count(30)->create();
+
+        // 4) Sesiones de terapia: asignar treatment y appointment existentes
+        $treatments = Treatment::pluck('id');
+        $appointments = Appoinment::pluck('id');
+        $services = MedicalService::pluck('id');
+
+        SessionTherapy::factory()
+            ->count(25)
+            ->state(function () use ($treatments, $appointments) {
+                return [
+                    'treatment_id' => $treatments->random(),
+                    'appointment_id' => $appointments->random(),
+                ];
+            })
+            ->create()
+            ->each(function (SessionTherapy $session) use ($services) {
+                // Adjuntar de 1 a 3 servicios a la sesión en la pivote session_service
+                $session->services()->attach(
+                    $services->random(rand(1, 3))->all()
+                );
+            });
     }
 }

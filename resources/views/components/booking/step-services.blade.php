@@ -2,7 +2,7 @@
     <h5 class="text-xl font-bold text-gray-900 mb-6">Selecciona el tratamiento que necesitas:</h5>
     <div class="grid grid-cols-2 gap-3">
         @php
-            $services = \App\Models\Service::all();
+            $services = \App\Models\MedicalService::all();
         @endphp
         
         @foreach($services as $service)
@@ -20,7 +20,10 @@
     </div>
 
     <div class="flex justify-end mt-6">
-        <button type="button" class="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-all widget-next-step disabled:opacity-50 disabled:cursor-not-allowed" data-next="2" disabled>
+        <button type="button" 
+                class="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-all widget-next-step disabled:opacity-50 disabled:cursor-not-allowed" 
+                data-next="2" 
+                disabled>
             Continuar
         </button>
     </div>

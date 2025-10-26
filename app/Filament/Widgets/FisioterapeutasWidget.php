@@ -13,9 +13,12 @@ class FisioterapeutasWidget extends Widget
     protected function getViewData(): array
     {
         return [
-            'fisioterapeutas' => User::role('fisioterapeuta')
+            'fisioterapeutas' => User::whereHas('roles', function ($q) {
+                    $q->whereIn('name', ['fisioterapeuta', 'super_admin'])
+                      ->where('guard_name', 'web');
+                })
                 ->withCount(['patients', 'appointments', 'treatments'])
-                ->get()
+                ->get(),
         ];
     }
 }

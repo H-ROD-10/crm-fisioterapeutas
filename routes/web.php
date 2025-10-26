@@ -96,35 +96,41 @@ Route::prefix('api/public')->name('public.')->group(function () {
     // Save booking
     Route::post('/save-booking', function () {
         $data = request()->validate([
-            'service_id' => 'required|exists:medical_services,id',
-            'employee_id' => 'required|exists:users,id',
-            'date' => 'required|date',
-            'time' => 'required',
-            'patient_name' => 'required|string',
-            'patient_email' => 'required|email',
-            'patient_phone' => 'required|string',
-            'notes' => 'nullable|string',
+            'service_id'   => 'required|exists:medical_services,id',
+            'employee_id'  => 'required|exists:users,id',
+            'date'         => 'required|date',
+            'time_slot'    => 'required',
+            'name'         => 'required|string',
+            'email'        => 'required|email',
+            'phone'        => 'required|string',
+            'dni'          => 'required|string',
+            'comments'     => 'nullable|string',
         ]);
+
+        $service = \App\Models\MedicalService::findOrFail($data['service_id']);
+        $start = \Carbon\Carbon::parse($data['date'].' '.$data['time_slot']);
+        $end = (clone $start)->addMinutes($service->duration ?? 60);
         
-        // Crear o encontrar paciente
+        // Crear o encontrar paciente por email
         $patient = \App\Models\Patient::firstOrCreate(
-            ['email' => $data['patient_email']],
+            ['email' => $data['email']],
             [
-                'name' => $data['patient_name'],
-                'phone' => $data['patient_phone'],
+                'name' => $data['name'],
+                'phone' => $data['phone'],
+                'dni' => $data['dni'],
                 'fisioterapeuta_id' => $data['employee_id'],
             ]
         );
         
         // Crear cita
         $appointment = \App\Models\Appoinment::create([
-            'patient_id' => $patient->id,
-            'fisioterapeuta_id' => $data['employee_id'],
+            'patient_id'         => $patient->id,
+            'fisioterapeuta_id'  => $data['employee_id'],
             'medical_service_id' => $data['service_id'],
-            'appointment_date' => $data['date'],
-            'appointment_time' => $data['time'],
-            'status' => 'pending',
-            'notes' => $data['notes'] ?? null,
+            'start_time'         => $start,
+            'end_time'           => $end,
+            'status'             => 'pending',
+            'notes'              => $data['comments'] ?? null,
         ]);
         
         return response()->json([

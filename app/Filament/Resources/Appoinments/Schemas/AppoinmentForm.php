@@ -25,6 +25,12 @@ class AppoinmentForm
                     ->options(['pending' => 'Pending', 'completed' => 'Completed', 'cancelled' => 'Cancelled'])
                     ->default('pending')
                     ->required(),
+                Select::make('medical_service_id')
+                    ->label('Servicio')
+                    ->relationship('medicalService', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 Select::make('patient_id')
                     ->relationship('patient', 'name')
                     ->label('Paciente')

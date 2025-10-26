@@ -28,7 +28,7 @@ class PatientFactory extends Factory
             'gender' => $this->faker->randomElement(['male', 'female', 'other']),
             'dni' => $this->faker->unique()->numerify('########'),
             'photo' => $this->faker->imageUrl(100, 100, 'people', true),
-            'fisioterapeuta_id' => User::factory(),
+            'fisioterapeuta_id' => fn () => User::query()->inRandomOrder()->value('id') ?? User::factory(),
         ];
     }
 }

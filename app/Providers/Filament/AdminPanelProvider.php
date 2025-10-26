@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo('/images/logo.svg')
             ->brandLogoHeight('3rem')
             ->login()
+            ->topbar(false)
             ->colors([
                 'primary' => Color::Emerald,
             ])

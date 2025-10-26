@@ -26,6 +26,9 @@ class AppoinmentsTable
                 TextColumn::make('status')
                     ->label('Estado')
                     ->badge(),
+                TextColumn::make('medicalService.name')
+                    ->label('Servicio')
+                    ->sortable(),
                 TextColumn::make('patient.name')
                     ->label('Paciente')
                     ->sortable(),

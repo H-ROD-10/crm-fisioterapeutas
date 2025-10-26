@@ -24,8 +24,8 @@ class MedicalRecordFactory extends Factory
             'medications' => $this->faker->optional()->text(100),
             'past_surgeries' => $this->faker->optional()->text(100),
             'notes_general' => $this->faker->optional()->text(100),
-            'patient_id' => Patient::factory(),
-            'fisioterapeuta_id' => User::factory(),
+            'patient_id' => fn () => Patient::query()->inRandomOrder()->value('id') ?? Patient::factory(),
+            'fisioterapeuta_id' => fn () => User::query()->inRandomOrder()->value('id') ?? User::factory(),
         ];
     }
 }
