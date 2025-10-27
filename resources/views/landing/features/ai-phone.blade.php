@@ -27,6 +27,6 @@
     </section>
 
     <x-feature.benefits />
-    <x-feature.navigation />
+    <x-feature.navigation exclude="ai-phone" />
     <x-feature.cta />
 @endsection

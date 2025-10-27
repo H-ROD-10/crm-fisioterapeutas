@@ -34,7 +34,7 @@
     </section>
 
     <!-- Feature Navigation Section -->
-    <x-feature.navigation />
+    <x-feature.navigation exclude="appointments" />
 
     <!-- CTA Section -->
     <x-feature.cta />

@@ -6,6 +6,6 @@
 @section('content')
     <x-feature.hero />
     <x-feature.benefits />
-    <x-feature.navigation />
+    <x-feature.navigation exclude="reminders" />
     <x-feature.cta />
 @endsection

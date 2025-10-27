@@ -54,6 +54,6 @@
     </section>
 
     <x-feature.benefits />
-    <x-feature.navigation />
+    <x-feature.navigation exclude="ai-calls" />
     <x-feature.cta />
 @endsection

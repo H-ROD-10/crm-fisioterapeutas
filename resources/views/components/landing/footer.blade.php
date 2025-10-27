@@ -37,8 +37,11 @@
                 <ul class="space-y-2 text-sm">
                     <li><a href="{{ route('features.appointments') }}" class="text-gray-400 hover:text-emerald-400 transition-colors">Gestión de Citas</a></li>
                     <li><a href="{{ route('features.clinical-history') }}" class="text-gray-400 hover:text-emerald-400 transition-colors">Historial Clínico</a></li>
-                    <li><a href="{{ route('features.billing') }}" class="text-gray-400 hover:text-emerald-400 transition-colors">Facturación Inteligente</a></li>
+                    <li><a href="{{ route('features.smart-transcription') }}" class="text-gray-400 hover:text-emerald-400 transition-colors">Transcripción Inteligente</a></li>
                     <li><a href="{{ route('features.virtual-assistant') }}" class="text-gray-400 hover:text-emerald-400 transition-colors">Asistente Virtual</a></li>
+                    <li><a href="{{ route('features.ai-calls') }}" class="text-gray-400 hover:text-emerald-400 transition-colors">Llamadas IA</a></li>
+                    <li><a href="{{ route('features.billing') }}" class="text-gray-400 hover:text-emerald-400 transition-colors">Facturación Inteligente</a></li>
+                    <li><a href="{{ route('features.reminders') }}" class="text-gray-400 hover:text-emerald-400 transition-colors">Recordatorios</a></li>
                     <li><a href="{{ route('features.marketing') }}" class="text-gray-400 hover:text-emerald-400 transition-colors">Marketing</a></li>
                 </ul>
             </div>

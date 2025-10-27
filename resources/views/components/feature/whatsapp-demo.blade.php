@@ -4,7 +4,7 @@
         <div class="bg-[#075E54] p-4 text-white flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden">
-                    <img src="{{ asset('img/logo.svg') }}" alt="Logo" class="w-8 h-8">
+                    <img src="{{ asset('images/logo.svg') }}" alt="Logo" class="w-8 h-8">
                 </div>
                 <div>
                     <h3 class="font-semibold text-sm">FisioAlcoy</h3>

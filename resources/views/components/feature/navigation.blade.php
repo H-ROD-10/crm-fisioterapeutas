@@ -1,3 +1,7 @@
+@php
+    $exclude = $exclude ?? '';
+@endphp
+
 <section class="py-20 bg-gray-50">
     <div class="container mx-auto px-4">
         <div class="max-w-3xl mx-auto text-center mb-16">
@@ -14,6 +18,7 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Gestión de Citas -->
+            @if($exclude !== 'appointments')
             <a href="{{ route('features.appointments') }}" class="group bg-white p-6 rounded-xl shadow-sm hover:shadow-xl transition-all transform hover:-translate-y-1" data-aos="fade-up">
                 <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                     <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
@@ -29,8 +34,10 @@
                     </svg>
                 </div>
             </a>
-
+            @endif
+            
             <!-- Historial Clínico -->
+            @if($exclude !== 'clinical-history')
             <a href="{{ route('features.clinical-history') }}" class="group bg-white p-6 rounded-xl shadow-sm hover:shadow-xl transition-all transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="100">
                 <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-all">
                     <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
@@ -47,8 +54,9 @@
                     </svg>
                 </div>
             </a>
-            
+            @endif            
             <!-- Asistente Virtual -->
+            @if($exclude !== 'virtual-assistant')
             <a href="{{ route('features.virtual-assistant') }}" class="group bg-white p-6 rounded-xl shadow-sm hover:shadow-xl transition-all transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="200">
                 <div class="w-14 h-14 bg-green-100 text-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-600 group-hover:text-white transition-all">
                     <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
@@ -65,9 +73,30 @@
                     </svg>
                 </div>
             </a>
+            @endif
+            
+            @if($exclude !== 'smart-transcription')
+            <!-- Transcripción Inteligente -->
+            <a href="{{ route('features.smart-transcription') }}" class="group bg-white p-6 rounded-xl shadow-sm hover:shadow-xl transition-all transform hover:-translate-y-1" data-aos="fade-up">
+                <div class="w-14 h-14 bg-cyan-100 text-cyan-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-cyan-600 group-hover:text-white transition-all">
+                    <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Transcripción Inteligente</h3>
+                <p class="text-gray-600 mb-4">Convierte notas de voz en informes médicos estructurados con IA especializada.</p>
+                <div class="flex items-center text-emerald-600 font-semibold">
+                    <span>Ver detalles</span>
+                    <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+            </a>
+            @endif
             
             <!-- Asistente de Llamadas IA -->
-            <a href="{{ route('features.ai-phone') }}" class="group bg-white p-6 rounded-xl shadow-sm hover:shadow-xl transition-all transform hover:-translate-y-1" data-aos="fade-up">
+            @if($exclude !== 'ai-calls')
+            <a href="{{ route('features.ai-calls') }}" class="group bg-white p-6 rounded-xl shadow-sm hover:shadow-xl transition-all transform hover:-translate-y-1" data-aos="fade-up">
                 <div class="w-14 h-14 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-all">
                     <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
@@ -82,8 +111,10 @@
                     </svg>
                 </div>
             </a>
+            @endif
             
             <!-- Facturación Inteligente -->
+            @if($exclude !== 'billing')
             <a href="{{ route('features.billing') }}" class="group bg-white p-6 rounded-xl shadow-sm hover:shadow-xl transition-all transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="100">
                 <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-amber-600 group-hover:text-white transition-all">
                     <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
@@ -99,8 +130,10 @@
                     </svg>
                 </div>
             </a>
+            @endif
             
             <!-- Marketing -->
+            @if($exclude !== 'marketing')
             <a href="{{ route('features.marketing') }}" class="group bg-white p-6 rounded-xl shadow-sm hover:shadow-xl transition-all transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="200">
                 <div class="w-14 h-14 bg-pink-100 text-pink-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-pink-600 group-hover:text-white transition-all">
                     <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
@@ -117,6 +150,7 @@
                     </svg>
                 </div>
             </a>
+            @endif
         </div>
     </div>
 </section>
