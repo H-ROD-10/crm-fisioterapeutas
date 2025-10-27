@@ -11,6 +11,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentView;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -62,6 +63,15 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->viteTheme('resources/css/filament/admin/theme.css');
+            ->viteTheme('resources/css/filament/admin/theme.css')
+        ;
+    }
+
+    public function boot(): void
+    {
+        // Inyectar el JS de la app en el <head> del panel, compatible con dev y build via @vite
+        FilamentView::registerRenderHook('panels::head.end', function (): string {
+            return view('filament.app-js')->render();
+        });
     }
 }

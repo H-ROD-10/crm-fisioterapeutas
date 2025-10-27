@@ -9,6 +9,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -25,22 +26,84 @@ class MedicalRecordRelationManager extends RelationManager
     public function form(Schema $schema): Schema
     {
         return $schema
+            ->extraAttributes([])
             ->components([
                 Textarea::make('allergies')
                     ->label('Alergias')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->afterContent([
+                        Action::make('record_allergies')
+                            ->label('')
+                            ->icon('heroicon-o-microphone')
+                            ->color('green')
+                            ->size('sm')
+                            ->tooltip('Grabar audio para Alergias')
+                            ->extraAttributes([
+                                'data-voice-button' => true,
+                                'data-voice-field' => 'allergies',
+                            ])
+                            ->action(fn () => null)
+                    ]),
                 Textarea::make('pathologies')
                     ->label('Enfermedades')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->afterContent([
+                        Action::make('record_pathologies')
+                            ->label('')
+                            ->icon('heroicon-o-microphone')
+                            ->color('green')
+                            ->tooltip('Grabar audio para Enfermedades')
+                            ->extraAttributes([
+                                'data-voice-button' => true,
+                                'data-voice-field' => 'pathologies',
+                            ])
+                            ->action(fn () => null)
+                    ]),
                 Textarea::make('medications')
                     ->label('Medicamentos')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->afterContent([
+                        Action::make('record_medications')
+                            ->label('')
+                            ->icon('heroicon-o-microphone')
+                            ->color('green')
+                            ->tooltip('Grabar audio para Medicamentos')
+                            ->extraAttributes([
+                                'data-voice-button' => true,
+                                'data-voice-field' => 'medications',
+                            ])
+                            ->action(fn () => null)
+                    ]),
                 Textarea::make('past_surgeries')
                     ->label(' Cirugías anteriores')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->afterContent([
+                        Action::make('record_past_surgeries')
+                            ->label('')
+                            ->icon('heroicon-o-microphone')
+                            ->color('green')
+                            ->tooltip('Grabar audio para Cirugías anteriores')
+                            ->extraAttributes([
+                                'data-voice-button' => true,
+                                'data-voice-field' => 'past_surgeries',
+                            ])
+                            ->action(fn () => null)
+                    ]),
                 Textarea::make('notes_general')
                     ->label('Notas Generales')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->afterContent([
+                        Action::make('record_notes_general')
+                            ->label('')
+                            ->icon('heroicon-o-microphone')
+                            ->color('green')
+                            ->tooltip('Grabar audio para Notas Generales')
+                            ->extraAttributes([
+                                'data-voice-button' => true,
+                                'data-voice-field' => 'notes_general',
+                            ])
+                            ->action(fn () => null)
+                    ]),
                 Select::make('patient_id')
                 ->label('Paciente')
                     ->relationship('patient', 'name')
@@ -100,3 +163,5 @@ class MedicalRecordRelationManager extends RelationManager
             ]);
     }
 }
+
+    
