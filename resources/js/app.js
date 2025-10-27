@@ -121,7 +121,9 @@ class VoiceRecorder {
         root.querySelector(`[wire\\:model="mountedActions.0.data.${fieldName}"]`) ||
         root.querySelector(`[wire\\:model$=".${fieldName}"]`) ||
         root.querySelector(`textarea[name="data[${fieldName}]"]`) ||
-        root.querySelector(`textarea[name$="[${fieldName}]"]`);
+        root.querySelector(`textarea[name$="[${fieldName}]"]`) ||
+        root.querySelector(`input[name="data[${fieldName}]"]`) ||
+        root.querySelector(`input[name$="[${fieldName}]"]`);
       if (textarea) break;
     }
     if (!textarea) return console.error('No se encontró textarea para:', fieldName);
