@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class RevenueChartWidget extends ChartWidget
 {
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 3;
     protected ?string $heading = 'Ingresos por Servicios';
     
     public ?string $filter = '30days';

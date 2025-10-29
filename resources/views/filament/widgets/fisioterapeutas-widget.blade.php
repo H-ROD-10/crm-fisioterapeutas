@@ -1,5 +1,5 @@
 <x-filament-widgets::widget>
-    <x-filament::section class="h-[84vh] overflow-y-auto overscroll-contain pr-2">
+    <x-filament::section class="h-[650px] overflow-y-auto overscroll-contain pr-2">
         <x-slot name="heading">
             Fisioterapeutas
         </x-slot>

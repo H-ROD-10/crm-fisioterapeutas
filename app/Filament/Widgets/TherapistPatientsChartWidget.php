@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class TherapistPatientsChartWidget extends ChartWidget
 {
-     protected static ?int $sort = 3;
+     protected static ?int $sort = 4;
     protected ?string $heading = 'Pacientes Atendidos por Fisioterapeutas';
     
     public ?string $filter = 'all';
