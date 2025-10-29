@@ -6,9 +6,11 @@ use Filament\Widgets\ChartWidget;
 use App\Models\SessionTherapy;
 use App\Models\MedicalService;
 use Illuminate\Support\Facades\DB;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class RevenueChartWidget extends ChartWidget
 {
+    use HasWidgetShield;
     protected static ?int $sort = 3;
     protected ?string $heading = 'Ingresos por Servicios';
     

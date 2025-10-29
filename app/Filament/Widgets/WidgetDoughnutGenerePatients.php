@@ -5,9 +5,11 @@ namespace App\Filament\Widgets;
 use Filament\Widgets\ChartWidget;
 use App\Models\Patient;
 use Illuminate\Support\Facades\DB;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class WidgetDoughnutGenerePatients extends ChartWidget
 {
+    use HasWidgetShield;
     protected static ?int $sort = 2;
     protected ?string $heading = 'Distribución de Pacientes por Género';
 

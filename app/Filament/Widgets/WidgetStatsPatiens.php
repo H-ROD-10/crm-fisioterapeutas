@@ -6,9 +6,11 @@ use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use App\Models\Patient;
 use Illuminate\Support\Facades\DB;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class WidgetStatsPatiens extends StatsOverviewWidget
 {
+    use HasWidgetShield;
     protected static ?int $sort = 0;
     protected function getStats(): array
     {

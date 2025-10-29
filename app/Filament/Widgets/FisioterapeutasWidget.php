@@ -4,9 +4,11 @@ namespace App\Filament\Widgets;
 
 use App\Models\User;
 use Filament\Widgets\Widget;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class FisioterapeutasWidget extends Widget
 {
+    use HasWidgetShield;
     protected static ?int $sort = 5;
     protected string $view = 'filament.widgets.fisioterapeutas-widget';
 

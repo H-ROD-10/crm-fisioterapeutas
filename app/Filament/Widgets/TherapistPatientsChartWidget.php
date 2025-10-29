@@ -6,9 +6,11 @@ use Filament\Widgets\ChartWidget;
 use App\Models\User;
 use App\Models\SessionTherapy;
 use Illuminate\Support\Facades\DB;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class TherapistPatientsChartWidget extends ChartWidget
 {
+    use HasWidgetShield;
      protected static ?int $sort = 4;
     protected ?string $heading = 'Pacientes Atendidos por Fisioterapeutas';
     
