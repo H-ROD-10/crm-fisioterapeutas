@@ -41,7 +41,11 @@ class PatientForm
                 FileUpload::make('photo')
                     ->label('Foto de perfil')
                     ->image()
-                    ->directory('patients'),
+                    ->disk('public')
+                    ->directory('patients')
+                    ->visibility('public')
+                    ->maxSize(1024) // 1MB para prueba
+                    ->nullable(),
                 Select::make('fisioterapeuta_id')
                     ->label('Fisioterapeuta')
                     ->relationship(

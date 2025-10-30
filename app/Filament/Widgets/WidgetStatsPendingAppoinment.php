@@ -7,6 +7,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 use App\Models\Appoinment;
 use Illuminate\Support\Facades\DB;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
+use Filament\Facades\Filament;
 
 class WidgetStatsPendingAppoinment extends StatsOverviewWidget
 {
@@ -14,23 +15,33 @@ class WidgetStatsPendingAppoinment extends StatsOverviewWidget
      protected static ?int $sort = 1;
     protected function getStats(): array
     {
+        $user = Filament::auth()->user();
+        
+        // Aplicar filtro por fisioterapeuta si es necesario
+        $query = Appoinment::query();
+        if ($user && $user->hasRole('fisioterapeuta')) {
+            $query->where('fisioterapeuta_id', $user->id);
+        }
+        
         // Total de citas pendientes
-        $totalPendientes = Appoinment::where(function ($query) {
-            $query->where('status', 'pendiente')
+        $totalPendientes = $query->where(function ($subQuery) {
+            $subQuery->where('status', 'pendiente')
                   ->orWhere('status', 'pending');
         })->count();
 
         // Citas pendientes para hoy
-        $pendientesHoy = Appoinment::where(function ($query) {
-            $query->where('status', 'pendiente')
+        $pendientesHoyQuery = clone $query;
+        $pendientesHoy = $pendientesHoyQuery->where(function ($subQuery) {
+            $subQuery->where('status', 'pendiente')
                   ->orWhere('status', 'pending');
         })
         ->whereDate('start_time', today())
         ->count();
 
         // Citas pendientes esta semana
-        $pendientesSemana = Appoinment::where(function ($query) {
-            $query->where('status', 'pendiente')
+        $pendientesSemanaQuery = clone $query;
+        $pendientesSemana = $pendientesSemanaQuery->where(function ($subQuery) {
+            $subQuery->where('status', 'pendiente')
                   ->orWhere('status', 'pending');
         })
         ->whereBetween('start_time', [now()->startOfWeek(), now()->endOfWeek()])

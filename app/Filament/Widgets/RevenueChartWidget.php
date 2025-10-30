@@ -7,6 +7,7 @@ use App\Models\SessionTherapy;
 use App\Models\MedicalService;
 use Illuminate\Support\Facades\DB;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
+use Filament\Facades\Filament;
 
 class RevenueChartWidget extends ChartWidget
 {
@@ -29,10 +30,19 @@ class RevenueChartWidget extends ChartWidget
 
         // Obtener ingresos por servicio en el período seleccionado
         try {
-            $revenues = DB::table('session_service')
+            $user = Filament::auth()->user();
+            $query = DB::table('session_service')
                 ->join('sessions_therapy', 'session_service.session_therapy_id', '=', 'sessions_therapy.id')
                 ->join('medical_services', 'session_service.medical_service_id', '=', 'medical_services.id')
-                ->where('sessions_therapy.session_date', '>=', $startDate)
+                ->where('sessions_therapy.session_date', '>=', $startDate);
+            
+            // Si es fisioterapeuta, filtrar por sus tratamientos
+            if ($user && $user->hasRole('fisioterapeuta')) {
+                $query->join('treatments', 'sessions_therapy.treatment_id', '=', 'treatments.id')
+                      ->where('treatments.fisioterapeuta_id', $user->id);
+            }
+            
+            $revenues = $query
                 ->select(
                     'medical_services.name',
                     'medical_services.price',

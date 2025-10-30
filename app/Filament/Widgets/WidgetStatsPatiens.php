@@ -7,6 +7,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 use App\Models\Patient;
 use Illuminate\Support\Facades\DB;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
+use Filament\Facades\Filament;
 
 class WidgetStatsPatiens extends StatsOverviewWidget
 {
@@ -14,29 +15,45 @@ class WidgetStatsPatiens extends StatsOverviewWidget
     protected static ?int $sort = 0;
     protected function getStats(): array
     {
+        $user = Filament::auth()->user();
+        
+        // Aplicar filtro por fisioterapeuta si es necesario
+        $query = Patient::query();
+        if ($user && $user->hasRole('fisioterapeuta')) {
+            $query->where('fisioterapeuta_id', $user->id);
+        }
+        
         // Total de pacientes
-        $totalPacientes = Patient::count();
+        $totalPacientes = $query->count();
 
         // Pacientes nuevos este mes
-        $pacientesNuevosMes = Patient::whereMonth('created_at', now()->month)
+        $pacientesNuevosMesQuery = clone $query;
+        $pacientesNuevosMes = $pacientesNuevosMesQuery->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
 
         // Pacientes nuevos esta semana
-        $pacientesNuevosSemana = Patient::whereBetween('created_at', [
+        $pacientesNuevosSemanaQuery = clone $query;
+        $pacientesNuevosSemana = $pacientesNuevosSemanaQuery->whereBetween('created_at', [
             now()->startOfWeek(),
             now()->endOfWeek()
         ])->count();
 
         // Pacientes con citas pendientes (activos)
-        $pacientesActivos = Patient::whereHas('appointments', function ($query) {
-            $query->where('status', 'pendiente')
+        $pacientesActivosQuery = clone $query;
+        $pacientesActivos = $pacientesActivosQuery->whereHas('appointments', function ($appointmentQuery) use ($user) {
+            $appointmentQuery->where('status', 'pendiente')
                   ->orWhere('status', 'pending')
                   ->where('start_time', '>=', now());
+            // Si es fisioterapeuta, filtrar también por sus citas
+            if ($user && $user->hasRole('fisioterapeuta')) {
+                $appointmentQuery->where('fisioterapeuta_id', $user->id);
+            }
         })->count();
 
         // Calcular tendencia del mes anterior
-        $pacientesMesAnterior = Patient::whereMonth('created_at', now()->subMonth()->month)
+        $pacientesMesAnteriorQuery = clone $query;
+        $pacientesMesAnterior = $pacientesMesAnteriorQuery->whereMonth('created_at', now()->subMonth()->month)
             ->whereYear('created_at', now()->subMonth()->year)
             ->count();
 

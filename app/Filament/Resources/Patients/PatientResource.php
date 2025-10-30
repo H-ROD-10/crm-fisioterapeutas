@@ -16,6 +16,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Facades\Filament;
 
 class PatientResource extends Resource
 {
@@ -42,6 +44,23 @@ class PatientResource extends Resource
     public static function table(Table $table): Table
     {
         return PatientsTable::configure($table);
+    }
+
+    /**
+     * Filtrar registros según el rol del usuario
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = Filament::auth()->user();
+
+        // Solo filtrar si el usuario es fisioterapeuta
+        if ($user && $user->hasRole('fisioterapeuta')) {
+            $query->where('fisioterapeuta_id', $user->id);
+        }
+        // Super admin y recepcionista ven todos los pacientes (sin filtro)
+
+        return $query;
     }
 
     public static function getRelations(): array

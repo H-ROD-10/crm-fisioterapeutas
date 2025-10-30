@@ -15,6 +15,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Facades\Filament;
 
 class SessionTherapyResource extends Resource
 {
@@ -42,6 +44,26 @@ class SessionTherapyResource extends Resource
     public static function table(Table $table): Table
     {
         return SessionTherapiesTable::configure($table);
+    }
+
+    /**
+     * Filtrar registros según el rol del usuario
+     * Las sesiones se filtran a través de la relación con tratamientos
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = Filament::auth()->user();
+
+        // Solo filtrar si el usuario es fisioterapeuta
+        if ($user && $user->hasRole('fisioterapeuta')) {
+            $query->whereHas('treatment', function (Builder $treatmentQuery) use ($user) {
+                $treatmentQuery->where('fisioterapeuta_id', $user->id);
+            });
+        }
+        // Super admin y recepcionista ven todas las sesiones (sin filtro)
+
+        return $query;
     }
 
     public static function getRelations(): array
