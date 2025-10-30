@@ -47,7 +47,7 @@ class SessionTherapyResource extends Resource
     }
 
     /**
-     * Filtrar registros según el rol del usuario
+     * Filtrar registros según el rol del usuario - Tenant Scoping
      * Las sesiones se filtran a través de la relación con tratamientos
      */
     public static function getEloquentQuery(): Builder
@@ -56,7 +56,7 @@ class SessionTherapyResource extends Resource
         $user = Filament::auth()->user();
 
         // Solo filtrar si el usuario es fisioterapeuta
-        if ($user && $user->hasRole('fisioterapeuta')) {
+        if ($user && $user->hasRole('Fisioterapeuta')) {
             $query->whereHas('treatment', function (Builder $treatmentQuery) use ($user) {
                 $treatmentQuery->where('fisioterapeuta_id', $user->id);
             });

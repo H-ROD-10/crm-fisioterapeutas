@@ -17,9 +17,9 @@ class WidgetStatsPatiens extends StatsOverviewWidget
     {
         $user = Filament::auth()->user();
         
-        // Aplicar filtro por fisioterapeuta si es necesario
+        // Tenant Scoping: Aplicar filtro por fisioterapeuta si es necesario
         $query = Patient::query();
-        if ($user && $user->hasRole('fisioterapeuta')) {
+        if ($user && $user->hasRole('Fisioterapeuta')) {
             $query->where('fisioterapeuta_id', $user->id);
         }
         
@@ -46,7 +46,7 @@ class WidgetStatsPatiens extends StatsOverviewWidget
                   ->orWhere('status', 'pending')
                   ->where('start_time', '>=', now());
             // Si es fisioterapeuta, filtrar también por sus citas
-            if ($user && $user->hasRole('fisioterapeuta')) {
+            if ($user && $user->hasRole('Fisioterapeuta')) {
                 $appointmentQuery->where('fisioterapeuta_id', $user->id);
             }
         })->count();

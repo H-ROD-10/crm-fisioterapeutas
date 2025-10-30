@@ -46,8 +46,15 @@ class PatientResource extends Resource
         return PatientsTable::configure($table);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            MedicalRecordRelationManager::class,
+        ];
+    }
+
     /**
-     * Filtrar registros según el rol del usuario
+     * Filtrar registros según el rol del usuario - Tenant Scoping
      */
     public static function getEloquentQuery(): Builder
     {
@@ -55,19 +62,12 @@ class PatientResource extends Resource
         $user = Filament::auth()->user();
 
         // Solo filtrar si el usuario es fisioterapeuta
-        if ($user && $user->hasRole('fisioterapeuta')) {
+        if ($user && $user->hasRole('Fisioterapeuta')) {
             $query->where('fisioterapeuta_id', $user->id);
         }
         // Super admin y recepcionista ven todos los pacientes (sin filtro)
 
         return $query;
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            MedicalRecordRelationManager::class,
-        ];
     }
 
     public static function getPages(): array

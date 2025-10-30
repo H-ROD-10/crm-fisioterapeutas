@@ -17,7 +17,7 @@ class FisioterapeutasWidget extends Widget
     {
         $user = Filament::auth()->user();
         
-        // Si es fisioterapeuta, solo mostrar su propia información
+        // Tenant Scoping: Si es fisioterapeuta, solo mostrar su propia información
         if ($user && $user->hasRole('fisioterapeuta')) {
             return [
                 'fisioterapeutas' => User::where('id', $user->id)

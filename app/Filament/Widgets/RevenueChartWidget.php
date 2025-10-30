@@ -36,7 +36,7 @@ class RevenueChartWidget extends ChartWidget
                 ->join('medical_services', 'session_service.medical_service_id', '=', 'medical_services.id')
                 ->where('sessions_therapy.session_date', '>=', $startDate);
             
-            // Si es fisioterapeuta, filtrar por sus tratamientos
+            // Tenant Scoping: Si es fisioterapeuta, filtrar por sus tratamientos
             if ($user && $user->hasRole('fisioterapeuta')) {
                 $query->join('treatments', 'sessions_therapy.treatment_id', '=', 'treatments.id')
                       ->where('treatments.fisioterapeuta_id', $user->id);

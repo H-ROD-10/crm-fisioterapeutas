@@ -7,6 +7,7 @@ namespace App\Policies;
 use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\SessionTherapy;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 
 class SessionTherapyPolicy
 {
@@ -14,12 +15,31 @@ class SessionTherapyPolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:SessionTherapy');
+
+        $hasPermission = $authUser->can('ViewAny:SessionTherapy');
+        
+        return $hasPermission;
     }
 
-    public function view(AuthUser $authUser, SessionTherapy $sessionTherapy): bool
+    public function view(AuthUser $authUser, SessionTherapy $sessionTherapy): Response|bool
     {
-        return $authUser->can('View:SessionTherapy');
+        // Verificar permiso básico
+        if (!$authUser->can('View:SessionTherapy')) {
+            return false;
+        }
+        
+        // Si es fisioterapeuta, solo puede ver sesiones de sus tratamientos
+        if ($authUser->hasRole('Fisioterapeuta')) {
+            $belongsToUser = $sessionTherapy->treatment && 
+                           $sessionTherapy->treatment->fisioterapeuta_id === $authUser->id;
+            
+            return $belongsToUser
+                ? Response::allow()
+                : Response::deny('Solo puedes ver las sesiones de tus tratamientos.');
+        }
+        
+        // Super admin y recepcionista pueden ver todas
+        return true;
     }
 
     public function create(AuthUser $authUser): bool
@@ -27,14 +47,46 @@ class SessionTherapyPolicy
         return $authUser->can('Create:SessionTherapy');
     }
 
-    public function update(AuthUser $authUser, SessionTherapy $sessionTherapy): bool
+    public function update(AuthUser $authUser, SessionTherapy $sessionTherapy): Response|bool
     {
-        return $authUser->can('Update:SessionTherapy');
+        // Verificar permiso básico
+        if (!$authUser->can('Update:SessionTherapy')) {
+            return false;
+        }
+        
+        // Si es fisioterapeuta, solo puede editar sesiones de sus tratamientos
+        if ($authUser->hasRole('fisioterapeuta')) {
+            $belongsToUser = $sessionTherapy->treatment && 
+                           $sessionTherapy->treatment->fisioterapeuta_id === $authUser->id;
+            
+            return $belongsToUser
+                ? Response::allow()
+                : Response::deny('Solo puedes editar las sesiones de tus tratamientos.');
+        }
+        
+        // Super admin y recepcionista pueden editar todas
+        return true;
     }
 
-    public function delete(AuthUser $authUser, SessionTherapy $sessionTherapy): bool
+    public function delete(AuthUser $authUser, SessionTherapy $sessionTherapy): Response|bool
     {
-        return $authUser->can('Delete:SessionTherapy');
+        // Verificar permiso básico
+        if (!$authUser->can('Delete:SessionTherapy')) {
+            return false;
+        }
+        
+        // Si es fisioterapeuta, solo puede eliminar sesiones de sus tratamientos
+        if ($authUser->hasRole('fisioterapeuta')) {
+            $belongsToUser = $sessionTherapy->treatment && 
+                           $sessionTherapy->treatment->fisioterapeuta_id === $authUser->id;
+            
+            return $belongsToUser
+                ? Response::allow()
+                : Response::deny('Solo puedes eliminar las sesiones de tus tratamientos.');
+        }
+        
+        // Super admin y recepcionista pueden eliminar todas
+        return true;
     }
 
     public function restore(AuthUser $authUser, SessionTherapy $sessionTherapy): bool

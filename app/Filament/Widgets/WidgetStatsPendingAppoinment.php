@@ -17,7 +17,7 @@ class WidgetStatsPendingAppoinment extends StatsOverviewWidget
     {
         $user = Filament::auth()->user();
         
-        // Aplicar filtro por fisioterapeuta si es necesario
+        // Tenant Scoping: Aplicar filtro por fisioterapeuta si es necesario
         $query = Appoinment::query();
         if ($user && $user->hasRole('fisioterapeuta')) {
             $query->where('fisioterapeuta_id', $user->id);
