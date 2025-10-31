@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'photo',
     ];
 
     /**
@@ -45,6 +46,26 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Accessors
+    
+    /**
+     * Obtener la URL completa de la foto
+     */
+    public function getPhotoAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+        
+        // Si ya es una URL completa, devolverla tal como está
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+        
+        // Si es una ruta relativa, convertirla a URL completa
+        return asset('storage/' . $value);
     }
 
     // Relaciones

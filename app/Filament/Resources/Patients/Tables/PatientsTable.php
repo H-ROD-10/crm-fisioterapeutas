@@ -45,8 +45,10 @@ class PatientsTable
                     ->label('DNI')
                     ->searchable(),
                 ImageColumn::make('photo')
-                    ->label('Foto de perfil')
-                    ->searchable(),
+                    ->label('Foto')
+                    ->circular()
+                    ->defaultImageUrl(url('/images/default-avatar.png'))
+                    ->size(40),
                 TextColumn::make('fisioterapeuta.name')
                     ->label('Fisioterapeuta')
                     ->sortable()

@@ -18,6 +18,26 @@ class MedicalService extends Model
         'duration',
     ];
 
+    // Accessors
+    
+    /**
+     * Obtener la URL completa de la imagen
+     */
+    public function getImageAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+        
+        // Si ya es una URL completa, devolverla tal como está
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+        
+        // Si es una ruta relativa, convertirla a URL completa
+        return asset('storage/' . $value);
+    }
+
     // Relaciones
 
     /**

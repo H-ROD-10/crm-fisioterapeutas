@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -21,6 +22,14 @@ class UserForm
                     ->label('Email')
                     ->email()
                     ->required(),
+                FileUpload::make('photo')
+                    ->label('Foto de perfil')
+                    ->image()
+                    ->disk('public')
+                    ->directory('users')
+                    ->visibility('public')
+                    ->avatar()
+                    ->nullable(),
                 DateTimePicker::make('email_verified_at')
                     ->label('Verificado'),
                 TextInput::make('password')

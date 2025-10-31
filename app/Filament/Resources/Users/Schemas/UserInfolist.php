@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -11,6 +12,11 @@ class UserInfolist
     {
         return $schema
             ->components([
+                ImageEntry::make('photo')
+                    ->label('Foto de perfil')
+                    ->circular()
+                    ->defaultImageUrl(url('/images/default-avatar.png'))
+                    ->size(100),
                 TextEntry::make('name')
                     ->label('Nombre'),
                 TextEntry::make('email')

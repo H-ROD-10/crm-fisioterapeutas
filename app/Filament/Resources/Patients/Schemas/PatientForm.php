@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\Patients\Schemas;
 
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Schema;
 
 class PatientForm
@@ -44,7 +44,7 @@ class PatientForm
                     ->disk('public')
                     ->directory('patients')
                     ->visibility('public')
-                    ->maxSize(1024) // 1MB para prueba
+                    ->avatar()
                     ->nullable(),
                 Select::make('fisioterapeuta_id')
                     ->label('Fisioterapeuta')

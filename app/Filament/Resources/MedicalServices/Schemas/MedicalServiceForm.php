@@ -24,6 +24,9 @@ class MedicalServiceForm
                     ->prefix('$'),
                 FileUpload::make('image')
                     ->label('Imagen')
+                    ->directory('medical-service')
+                    ->disk('public')
+                    ->visibility('public')
                     ->image()
                     ->required(),
                 TextInput::make('duration')

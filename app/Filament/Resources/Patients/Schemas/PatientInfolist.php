@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Patients\Schemas;
 
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -11,6 +12,11 @@ class PatientInfolist
     {
         return $schema
             ->components([
+                ImageEntry::make('photo')
+                    ->label('Foto de perfil')
+                    ->circular()
+                    ->defaultImageUrl(url('/images/default-avatar.png'))
+                    ->size(100),
                 TextEntry::make('name'),
                 TextEntry::make('last_name')
                     ->placeholder('-'),
@@ -28,8 +34,6 @@ class PatientInfolist
                 TextEntry::make('gender')
                     ->placeholder('-'),
                 TextEntry::make('dni'),
-                TextEntry::make('photo')
-                    ->placeholder('-'),
                 TextEntry::make('fisioterapeuta_id')
                     ->numeric()
                     ->placeholder('-'),

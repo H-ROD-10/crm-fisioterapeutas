@@ -27,7 +27,10 @@ class MedicalServicesTable
                     ->label('Precio')
                     ->sortable(),
                 ImageColumn::make('image')
-                    ->label('Imagen'),
+                    ->label('Imagen')
+                    ->square()
+                    ->size(60)
+                    ->defaultImageUrl(url('/images/default-service.png')),
                 TextColumn::make('duration')
                     ->label('Duración')
                     ->numeric()

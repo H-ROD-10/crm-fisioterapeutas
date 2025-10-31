@@ -12,6 +12,10 @@ class MedicalServiceInfolist
     {
         return $schema
             ->components([
+                ImageEntry::make('image')
+                    ->label('Imagen del servicio')
+                    ->size(200)
+                    ->defaultImageUrl(url('/images/default-service.png')),
                 TextEntry::make('name')
                     ->label('Nombre'),
                 TextEntry::make('description')
@@ -19,8 +23,6 @@ class MedicalServiceInfolist
                 TextEntry::make('price')
                     ->label('Precio')
                     ->money(),
-                ImageEntry::make('image')
-                    ->label('Imagen'),
                 TextEntry::make('duration')
                     ->label('Duración')
                     ->numeric(),
