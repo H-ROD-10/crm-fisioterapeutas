@@ -101,4 +101,110 @@ class User extends Authenticatable
     {
         return $this->hasMany(Treatment::class, 'fisioterapeuta_id');
     }
+
+    // Métodos de disponibilidad
+
+    /**
+     * Verificar si el fisioterapeuta está disponible en un horario específico
+     */
+    public function isAvailableAt(\Carbon\Carbon $startTime, int $durationMinutes = 60, ?int $excludeAppointmentId = null): bool
+    {
+        return Appoinment::isTimeSlotAvailable($this->id, $startTime, $durationMinutes, $excludeAppointmentId);
+    }
+
+    /**
+     * Obtener citas del fisioterapeuta para una fecha específica
+     */
+    public function getAppointmentsForDate(\Carbon\Carbon $date)
+    {
+        return $this->appointments()
+            ->forDate($date)
+            ->active()
+            ->orderBy('start_time')
+            ->with(['patient', 'medicalService'])
+            ->get();
+    }
+
+    /**
+     * Obtener horarios disponibles para una fecha específica
+     */
+    public function getAvailableTimeSlotsForDate(\Carbon\Carbon $date, int $durationMinutes = 60, array $workingHours = ['09:00', '18:00'], int $slotInterval = 30): array
+    {
+        return Appoinment::getAvailableTimeSlots($this->id, $date, $durationMinutes, $workingHours, $slotInterval);
+    }
+
+    /**
+     * Verificar si tiene conflictos en un rango de tiempo
+     */
+    public function hasConflictInTimeRange(\Carbon\Carbon $startTime, \Carbon\Carbon $endTime, ?int $excludeAppointmentId = null): bool
+    {
+        return Appoinment::hasTimeConflict($this->id, $startTime, $endTime, $excludeAppointmentId);
+    }
+
+    /**
+     * Obtener citas que se solapan con un horario dado
+     */
+    public function getConflictingAppointments(\Carbon\Carbon $startTime, \Carbon\Carbon $endTime, ?int $excludeAppointmentId = null)
+    {
+        return Appoinment::getConflictingAppointments($this->id, $startTime, $endTime, $excludeAppointmentId);
+    }
+
+    /**
+     * Obtener el próximo slot disponible después de una fecha/hora dada
+     */
+    public function getNextAvailableSlot(\Carbon\Carbon $afterDateTime, int $durationMinutes = 60, array $workingHours = ['09:00', '18:00']): ?\Carbon\Carbon
+    {
+        $currentDate = $afterDateTime->copy()->startOfDay();
+        $maxDaysToCheck = 30; // Buscar hasta 30 días en el futuro
+        
+        for ($i = 0; $i < $maxDaysToCheck; $i++) {
+            $checkDate = $currentDate->copy()->addDays($i);
+            
+            // Saltar fines de semana (opcional)
+            if ($checkDate->isWeekend()) {
+                continue;
+            }
+            
+            $availableSlots = $this->getAvailableTimeSlotsForDate($checkDate, $durationMinutes, $workingHours);
+            
+            foreach ($availableSlots as $slot) {
+                $slotDateTime = \Carbon\Carbon::parse($slot['datetime']);
+                
+                // Si es el mismo día, asegurar que sea después de la hora especificada
+                if ($checkDate->isSameDay($afterDateTime) && $slotDateTime->lte($afterDateTime)) {
+                    continue;
+                }
+                
+                return $slotDateTime;
+            }
+        }
+        
+        return null; // No hay slots disponibles en los próximos 30 días
+    }
+
+    // Scopes
+
+    /**
+     * Scope para obtener fisioterapeutas disponibles en un horario específico
+     */
+    public function scopeAvailableAt($query, \Carbon\Carbon $startTime, int $durationMinutes = 60)
+    {
+        $endTime = (clone $startTime)->addMinutes($durationMinutes);
+        
+        return $query->whereDoesntHave('appointments', function ($appointmentQuery) use ($startTime, $endTime) {
+            $appointmentQuery->where('status', '!=', 'cancelled')
+                ->where('start_time', '<', $endTime)
+                ->where('end_time', '>', $startTime);
+        });
+    }
+
+    /**
+     * Scope para fisioterapeutas (usuarios con rol de fisioterapeuta)
+     */
+    public function scopeFisioterapeutas($query)
+    {
+        return $query->whereHas('roles', function ($roleQuery) {
+            $roleQuery->where('name', 'fisioterapeuta');
+        });
+    }
 }

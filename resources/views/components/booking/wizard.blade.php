@@ -529,43 +529,52 @@
             const container = document.getElementById('time-slots-container');
             if (!container) return;
             
-            container.innerHTML = '<div class="text-center text-gray-500 py-4">Cargando horarios...</div>';
+            container.innerHTML = '<div class="text-center text-gray-500 py-4">Cargando horarios disponibles...</div>';
             
             const employeeId = employeeInput.value;
+            const serviceId = serviceInput.value;
             const dateStr = date.toISOString().split('T')[0];
             
-            if (!employeeId) {
-                container.innerHTML = '<div class="text-center text-red-500 py-4">Selecciona un profesional primero</div>';
+            if (!employeeId || !serviceId) {
+                container.innerHTML = '<div class="text-center text-red-500 py-4">Selecciona un profesional y servicio primero</div>';
                 return;
             }
             
             try {
-                // Generar horarios de ejemplo (9:00 - 18:00, cada 30 min)
-                const timeSlots = [];
-                for (let hour = 9; hour < 18; hour++) {
-                    for (let minute of [0, 30]) {
-                        const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-                        timeSlots.push({
-                            time: time,
-                            available: Math.random() > 0.3 // 70% disponibilidad
-                        });
-                    }
+                const url = `/api/public/available-time-slots?employee_id=${employeeId}&service_id=${serviceId}&date=${dateStr}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) {
+                    container.innerHTML = `<div class="text-center text-red-500 py-4">${data.message || 'Error al cargar horarios'}</div>`;
+                    return;
                 }
                 
+                const timeSlots = data.slots || [];
+                
                 if (timeSlots.length === 0) {
-                    container.innerHTML = '<div class="text-center text-gray-500 py-4">No hay horarios disponibles para esta fecha</div>';
+                    container.innerHTML = `
+                        <div class="text-center text-gray-500 py-8">
+                            <div class="mb-4">
+                                <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-lg font-medium">No hay horarios disponibles</p>
+                            <p class="text-sm">Intenta con otra fecha o fisioterapeuta</p>
+                        </div>
+                    `;
                     return;
                 }
                 
                 container.innerHTML = `
+                    <div class="mb-4 text-sm text-gray-600">
+                        <strong>Horarios disponibles para ${data.employee}</strong> - ${data.service}
+                    </div>
                     <div class="grid grid-cols-3 md:grid-cols-4 gap-3">
                         ${timeSlots.map(slot => `
                             <button type="button" 
-                                    class="time-slot px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all ${
-                                        slot.available 
-                                            ? 'border-gray-200 text-gray-700 hover:border-emerald-500 hover:bg-emerald-50 cursor-pointer' 
-                                            : 'border-gray-100 text-gray-400 bg-gray-50 cursor-not-allowed'
-                                    }" 
+                                    class="time-slot px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all border-gray-200 text-gray-700 hover:border-emerald-500 hover:bg-emerald-50 cursor-pointer" 
                                     data-time="${slot.time}"
                                     ${!slot.available ? 'disabled' : ''}>
                                 ${slot.time}
@@ -704,7 +713,38 @@
                     // Mostrar paso 5
                     showStep(5);
                 } else {
-                    alert('Error: ' + (result.message || 'No se pudo procesar la reserva'));
+                    // Manejar errores específicos
+                    if (response.status === 409) {
+                        // Conflicto de horario
+                        let message = result.message || 'El horario seleccionado ya no está disponible.';
+                        if (result.conflicts && result.conflicts.length > 0) {
+                            message += '\n\nCitas existentes:';
+                            result.conflicts.forEach(conflict => {
+                                message += `\n• ${conflict.start_time} - ${conflict.end_time}: ${conflict.patient} (${conflict.service})`;
+                            });
+                        }
+                        alert(message);
+                        
+                        // Volver al paso 3 para seleccionar otro horario
+                        showStep(3);
+                        if (selectedDate) {
+                            loadTimeSlots(selectedDate);
+                        }
+                    } else if (response.status === 422) {
+                        // Errores de validación
+                        let message = 'Error de validación:\n';
+                        if (result.errors) {
+                            Object.keys(result.errors).forEach(field => {
+                                message += `\n• ${result.errors[field].join(', ')}`;
+                            });
+                        } else {
+                            message += result.message || 'Datos inválidos';
+                        }
+                        alert(message);
+                    } else {
+                        alert('Error: ' + (result.message || 'No se pudo procesar la reserva'));
+                    }
+                    
                     // Restaurar botón
                     btnText.classList.remove('hidden');
                     btnLoading.classList.add('hidden');

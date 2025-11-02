@@ -71,4 +71,115 @@ class Appoinment extends Model
     {
         return $this->hasOne(SessionTherapy::class, 'appointment_id');
     }
+
+    // Métodos de validación de disponibilidad
+
+    /**
+     * Verificar si existe conflicto de horarios para un fisioterapeuta
+     */
+    public static function hasTimeConflict(int $fisioterapeutaId, \Carbon\Carbon $startTime, \Carbon\Carbon $endTime, ?int $excludeAppointmentId = null): bool
+    {
+        $query = static::where('fisioterapeuta_id', $fisioterapeutaId)
+            ->where('status', '!=', 'cancelled')
+            ->where(function ($q) use ($startTime, $endTime) {
+                // Verificar solapamientos:
+                // 1. La nueva cita empieza antes de que termine una existente Y termina después de que empiece una existente
+                $q->where(function ($subQ) use ($startTime, $endTime) {
+                    $subQ->where('start_time', '<', $endTime)
+                         ->where('end_time', '>', $startTime);
+                });
+            });
+
+        if ($excludeAppointmentId) {
+            $query->where('id', '!=', $excludeAppointmentId);
+        }
+
+        return $query->exists();
+    }
+
+    /**
+     * Obtener citas que se solapan con el horario dado
+     */
+    public static function getConflictingAppointments(int $fisioterapeutaId, \Carbon\Carbon $startTime, \Carbon\Carbon $endTime, ?int $excludeAppointmentId = null)
+    {
+        $query = static::where('fisioterapeuta_id', $fisioterapeutaId)
+            ->where('status', '!=', 'cancelled')
+            ->where(function ($q) use ($startTime, $endTime) {
+                $q->where('start_time', '<', $endTime)
+                  ->where('end_time', '>', $startTime);
+            })
+            ->with(['patient', 'medicalService']);
+
+        if ($excludeAppointmentId) {
+            $query->where('id', '!=', $excludeAppointmentId);
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Verificar disponibilidad para una fecha y hora específica
+     */
+    public static function isTimeSlotAvailable(int $fisioterapeutaId, \Carbon\Carbon $startTime, int $durationMinutes = 60, ?int $excludeAppointmentId = null): bool
+    {
+        $endTime = (clone $startTime)->addMinutes($durationMinutes);
+        return !static::hasTimeConflict($fisioterapeutaId, $startTime, $endTime, $excludeAppointmentId);
+    }
+
+    /**
+     * Obtener horarios disponibles para un día específico
+     */
+    public static function getAvailableTimeSlots(int $fisioterapeutaId, \Carbon\Carbon $date, int $durationMinutes = 60, array $workingHours = ['09:00', '18:00'], int $slotInterval = 30): array
+    {
+        $availableSlots = [];
+        $startHour = \Carbon\Carbon::parse($workingHours[0]);
+        $endHour = \Carbon\Carbon::parse($workingHours[1]);
+        
+        // Crear slots cada $slotInterval minutos
+        $currentSlot = $date->copy()->setTime($startHour->hour, $startHour->minute);
+        $dayEnd = $date->copy()->setTime($endHour->hour, $endHour->minute);
+        
+        while ($currentSlot->addMinutes($durationMinutes)->lte($dayEnd)) {
+            $slotStart = $currentSlot->copy()->subMinutes($durationMinutes);
+            
+            // Verificar si el slot está disponible
+            if (static::isTimeSlotAvailable($fisioterapeutaId, $slotStart, $durationMinutes)) {
+                $availableSlots[] = [
+                    'time' => $slotStart->format('H:i'),
+                    'datetime' => $slotStart->toISOString(),
+                    'available' => true
+                ];
+            }
+            
+            $currentSlot->addMinutes($slotInterval);
+        }
+        
+        return $availableSlots;
+    }
+
+    // Scopes
+
+    /**
+     * Scope para filtrar citas por fisioterapeuta
+     */
+    public function scopeForFisioterapeuta($query, int $fisioterapeutaId)
+    {
+        return $query->where('fisioterapeuta_id', $fisioterapeutaId);
+    }
+
+    /**
+     * Scope para filtrar citas por fecha
+     */
+    public function scopeForDate($query, \Carbon\Carbon $date)
+    {
+        return $query->whereDate('start_time', $date->format('Y-m-d'));
+    }
+
+    /**
+     * Scope para filtrar citas activas (no canceladas)
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', '!=', 'cancelled');
+    }
 }

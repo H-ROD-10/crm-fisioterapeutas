@@ -74,69 +74,118 @@ Route::prefix('api/public')->name('public.')->group(function () {
         return response()->json($dates);
     })->name('available_dates');
     
-    // Get available time slots for a specific date
+    // Get available time slots for a specific date with real availability check
     Route::get('/available-time-slots', function () {
         $date = request('date');
         $employeeId = request('employee_id');
         $serviceId = request('service_id');
         
-        // Generate time slots from 9:00 to 18:00 every 30 minutes
-        $slots = [];
-        $start = 9;
-        $end = 18;
-        
-        for ($hour = $start; $hour < $end; $hour++) {
-            $slots[] = sprintf('%02d:00', $hour);
-            $slots[] = sprintf('%02d:30', $hour);
+        if (!$employeeId || !$serviceId || !$date) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parámetros requeridos: employee_id, service_id, date'
+            ], 400);
         }
-        
-        return response()->json($slots);
+
+        try {
+            $fisioterapeuta = \App\Models\User::find($employeeId);
+            $service = \App\Models\MedicalService::find($serviceId);
+            $dateCarbon = \Carbon\Carbon::parse($date);
+            
+            if (!$fisioterapeuta || !$service) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Fisioterapeuta o servicio no válido'
+                ], 400);
+            }
+
+            $availableSlots = $fisioterapeuta->getAvailableTimeSlotsForDate(
+                $dateCarbon, 
+                $service->duration ?? 60
+            );
+            
+            return response()->json([
+                'success' => true,
+                'slots' => $availableSlots,
+                'date' => $date,
+                'employee' => $fisioterapeuta->name,
+                'service' => $service->name
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener horarios disponibles'
+            ], 500);
+        }
     })->name('available_time_slots');
     
-    // Save booking
-    Route::post('/save-booking', function () {
-        $data = request()->validate([
-            'service_id'   => 'required|exists:medical_services,id',
-            'employee_id'  => 'required|exists:users,id',
-            'date'         => 'required|date',
-            'time_slot'    => 'required',
-            'name'         => 'required|string',
-            'email'        => 'required|email',
-            'phone'        => 'required|string',
-            'dni'          => 'required|string',
-            'comments'     => 'nullable|string',
-        ]);
+    // Save booking with validation
+    Route::post('/save-booking', function (\App\Http\Requests\CreateAppointmentRequest $request) {
+        try {
+            $data = $request->validated();
 
-        $service = \App\Models\MedicalService::findOrFail($data['service_id']);
-        $start = \Carbon\Carbon::parse($data['date'].' '.$data['time_slot']);
-        $end = (clone $start)->addMinutes($service->duration ?? 60);
-        
-        // Crear o encontrar paciente por email
-        $patient = \App\Models\Patient::firstOrCreate(
-            ['email' => $data['email']],
-            [
-                'name' => $data['name'],
-                'phone' => $data['phone'],
-                'dni' => $data['dni'],
-                'fisioterapeuta_id' => $data['employee_id'],
-            ]
-        );
-        
-        // Crear cita
-        $appointment = \App\Models\Appoinment::create([
-            'patient_id'         => $patient->id,
-            'fisioterapeuta_id'  => $data['employee_id'],
-            'medical_service_id' => $data['service_id'],
-            'start_time'         => $start,
-            'end_time'           => $end,
-            'status'             => 'pending',
-            'notes'              => $data['comments'] ?? null,
-        ]);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Cita reservada exitosamente',
-            'appointment_id' => $appointment->id,
-        ]);
+            $service = \App\Models\MedicalService::findOrFail($data['service_id']);
+            $start = \Carbon\Carbon::parse($data['date'].' '.$data['time_slot']);
+            $end = (clone $start)->addMinutes($service->duration ?? 60);
+            
+            // Verificar disponibilidad una vez más antes de crear
+            $fisioterapeuta = \App\Models\User::findOrFail($data['employee_id']);
+            if (!$fisioterapeuta->isAvailableAt($start, $service->duration ?? 60)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El horario seleccionado ya no está disponible. Por favor, seleccione otro horario.',
+                    'conflicts' => $fisioterapeuta->getConflictingAppointments($start, $end)->map(function($appointment) {
+                        return [
+                            'start_time' => $appointment->start_time->format('H:i'),
+                            'end_time' => $appointment->end_time->format('H:i'),
+                            'patient' => $appointment->patient->name ?? 'Paciente',
+                            'service' => $appointment->medicalService->name ?? 'Servicio'
+                        ];
+                    })
+                ], 409);
+            }
+            
+            // Crear o encontrar paciente por email
+            $patient = \App\Models\Patient::firstOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'phone' => $data['phone'],
+                    'dni' => $data['dni'],
+                    'fisioterapeuta_id' => $data['employee_id'],
+                ]
+            );
+            
+            // Crear cita
+            $appointment = \App\Models\Appoinment::create([
+                'patient_id'         => $patient->id,
+                'fisioterapeuta_id'  => $data['employee_id'],
+                'medical_service_id' => $data['service_id'],
+                'start_time'         => $start,
+                'end_time'           => $end,
+                'status'             => 'pending',
+                'notes'              => $data['comments'] ?? null,
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Cita reservada exitosamente',
+                'appointment_id' => $appointment->id,
+                'appointment_details' => [
+                    'date' => $start->format('d/m/Y'),
+                    'time' => $start->format('H:i'),
+                    'service' => $service->name,
+                    'fisioterapeuta' => $fisioterapeuta->name,
+                    'patient' => $patient->name
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la reserva: ' . $e->getMessage()
+            ], 500);
+        }
     })->name('save_booking');
 });
