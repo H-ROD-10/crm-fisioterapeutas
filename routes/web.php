@@ -189,3 +189,8 @@ Route::prefix('api/public')->name('public.')->group(function () {
         }
     })->name('save_booking');
 });
+
+// Agente de Reservas IA
+Route::prefix('booking-agent')->name('booking-agent.')->group(function () {
+    Route::post('/chat', [App\Http\Controllers\SimpleBookingAgentController::class, 'chat'])->name('chat');
+});
