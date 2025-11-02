@@ -103,6 +103,9 @@
   <x-fisioalcoy.cta />
   
   <x-fisioalcoy.booking-modal :services="$services" />
+  
+  <!-- Agente de Reservas IA -->
+  @livewire('landing.whatsapp-button')
 @endsection
 
 @section('scripts')

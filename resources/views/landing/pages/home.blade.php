@@ -30,7 +30,7 @@
     @livewire('landing.contact-form')
 
     <!-- WhatsApp Floating Button -->
-    @livewire('landing.whatsapp-button')
+   {{--  @livewire('landing.whatsapp-button') --}}
 
     <!-- Final CTA Section -->
     <section class="py-20 bg-linear-to-br from-emerald-600 to-teal-600 text-white">

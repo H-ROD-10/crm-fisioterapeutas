@@ -51,7 +51,13 @@ class SimpleBookingAgentController extends Controller
             // Actualizar historial
             $newHistory = $conversationHistory;
             $newHistory[] = ['role' => 'user', 'message' => $userMessage];
-            $newHistory[] = ['role' => 'assistant', 'message' => $reply];
+            
+            // Si hay resultado de función, agregarlo al historial para referencia futura
+            if ($functionResult && isset($functionResult['fisioterapeuta_seleccionado'])) {
+                $newHistory[] = ['role' => 'assistant', 'message' => $reply, 'data' => $functionResult];
+            } else {
+                $newHistory[] = ['role' => 'assistant', 'message' => $reply];
+            }
             
             return response()->json([
                 'success' => true,
@@ -187,6 +193,13 @@ Mantén el foco en obtener la información paso a paso de manera conversacional.
             return $this->verificarDisponibilidad($bookingInfo);
         }
         
+        // Comando para forzar creación de reserva
+        if (strtolower(trim($originalMessage)) === 'crear') {
+            $bookingInfo = $this->extractBookingInfo($history, $originalMessage);
+            \Log::info('FORZANDO CREACIÓN DE RESERVA', $bookingInfo);
+            return $this->crearReserva($bookingInfo);
+        }
+        
         // TRIGGER PRINCIPAL: Detectar cuando se proporciona fecha y hora
         $hasDia = (strpos($message, 'lunes') !== false || strpos($message, 'martes') !== false || 
                    strpos($message, 'marte') !== false || // "El marte" sin s
@@ -238,12 +251,38 @@ Mantén el foco en obtener la información paso a paso de manera conversacional.
             
             \Log::info('BOOKING INFO PARA CONFIRMACIÓN', [
                 'bookingInfo' => $bookingInfo,
-                'isComplete' => $this->isCompleteBookingInfo($bookingInfo)
+                'isComplete' => $this->isCompleteBookingInfo($bookingInfo),
+                'fisioterapeuta_seleccion' => $bookingInfo['fisioterapeuta_seleccion'] ?? 'NULL',
+                'history_count' => count($history)
             ]);
+            
+            // Buscar fisioterapeuta en historial si no se encontró
+            if (empty($bookingInfo['fisioterapeuta_seleccion'])) {
+                foreach ($history as $item) {
+                    if ($item['role'] === 'assistant' && isset($item['data']['fisioterapeuta_seleccionado'])) {
+                        $bookingInfo['fisioterapeuta_seleccion'] = $item['data']['fisioterapeuta_seleccionado'];
+                        \Log::info('FISIOTERAPEUTA ENCONTRADO EN HISTORIAL', [
+                            'fisioterapeuta' => $bookingInfo['fisioterapeuta_seleccion']
+                        ]);
+                        break;
+                    }
+                }
+            }
             
             if ($this->isCompleteBookingInfo($bookingInfo)) {
                 \Log::info('EJECUTANDO CREAR RESERVA', $bookingInfo);
                 return $this->crearReserva($bookingInfo);
+            } else {
+                \Log::info('BOOKING INFO INCOMPLETA PARA CREAR RESERVA', [
+                    'missing_fields' => [
+                        'nombre' => empty($bookingInfo['nombre']),
+                        'dni' => empty($bookingInfo['dni']),
+                        'email_or_phone' => empty($bookingInfo['email']) && empty($bookingInfo['telefono']),
+                        'fecha' => empty($bookingInfo['fecha']),
+                        'hora' => empty($bookingInfo['hora']),
+                        'fisioterapeuta' => empty($bookingInfo['fisioterapeuta_seleccion'])
+                    ]
+                ]);
             }
         }
         
@@ -267,15 +306,30 @@ Mantén el foco en obtener la información paso a paso de manera conversacional.
         }
         
         // Detectar selección de fisioterapeuta (solo cuando hay lista previa)
-        if ((strpos($message, 'elijo') !== false ||
-            strpos($message, 'quiero') !== false ||
-            strpos($message, 'prefiero') !== false ||
-            preg_match('/^[1-5]$/', trim($originalMessage))) &&
-            $this->hasPhysiotherapistList($history)) {
+        if ($this->hasPhysiotherapistList($history)) {
+            $isSelection = (strpos($message, 'elijo') !== false ||
+                           strpos($message, 'quiero') !== false ||
+                           strpos($message, 'prefiero') !== false ||
+                           preg_match('/^[1-5]$/', trim($originalMessage)) ||
+                           preg_match('/^[A-Za-záéíóúñ]+$/', trim($originalMessage))); // Solo nombres
             
-            $bookingInfo = $this->extractBookingInfo($history, $message);
-            if (!empty($bookingInfo['fisioterapeuta_seleccion'])) {
-                return $this->seleccionarFisioterapeuta($bookingInfo, $history);
+            \Log::info('EVALUANDO SELECCIÓN DE FISIOTERAPEUTA', [
+                'message' => $originalMessage,
+                'hasPhysiotherapistList' => true,
+                'isSelection' => $isSelection,
+                'historyCount' => count($history)
+            ]);
+            
+            if ($isSelection) {
+                $bookingInfo = $this->extractBookingInfo($history, $message);
+                \Log::info('BOOKING INFO PARA SELECCIÓN', [
+                    'bookingInfo' => $bookingInfo,
+                    'fisioterapeuta_seleccion' => $bookingInfo['fisioterapeuta_seleccion'] ?? 'NULL'
+                ]);
+                
+                if (!empty($bookingInfo['fisioterapeuta_seleccion'])) {
+                    return $this->seleccionarFisioterapeuta($bookingInfo, $history);
+                }
             }
         }
         
@@ -401,11 +455,22 @@ Mantén el foco en obtener la información paso a paso de manera conversacional.
             }
         }
         
-        // Extraer selección de fisioterapeuta (solo números del 1-5)
+        // Extraer selección de fisioterapeuta (números del 1-5 o nombres)
         if (preg_match('/(?:elijo|quiero|prefiero)\s+(?:el\s+)?([1-5])/i', $currentMessage, $matches)) {
             $info['fisioterapeuta_seleccion'] = trim($matches[1]);
         } elseif (preg_match('/^([1-5])$/', trim($currentMessage))) {
             $info['fisioterapeuta_seleccion'] = trim($currentMessage);
+        } elseif (preg_match('/^([A-Za-záéíóúñ]+)$/', trim($currentMessage))) {
+            // Detectar nombres simples como "Lara", "Ana", "Carlos"
+            $info['fisioterapeuta_seleccion'] = trim($currentMessage);
+        }
+        
+        // Buscar fisioterapeuta seleccionado en respuestas del asistente
+        foreach ($history as $item) {
+            if ($item['role'] === 'assistant' && isset($item['data']['fisioterapeuta_seleccionado'])) {
+                $info['fisioterapeuta_seleccion'] = $item['data']['fisioterapeuta_seleccionado'];
+                break;
+            }
         }
         
         return $info;
@@ -641,14 +706,15 @@ Mantén el foco en obtener la información paso a paso de manera conversacional.
                 ];
             }
 
-            // Crear o encontrar paciente
+            // Crear o encontrar paciente por DNI (más confiable)
             $patient = Patient::firstOrCreate(
-                ['email' => $bookingInfo['email'] ?? 'temp@example.com'],
+                ['dni' => $bookingInfo['dni']],
                 [
                     'name' => explode(' ', $bookingInfo['nombre'])[0] ?? 'Paciente',
                     'last_name' => implode(' ', array_slice(explode(' ', $bookingInfo['nombre']), 1)) ?: '',
                     'email' => $bookingInfo['email'] ?? 'temp@example.com',
                     'phone' => $bookingInfo['telefono'] ?? '',
+                    'dni' => $bookingInfo['dni'],
                     'fisioterapeuta_id' => $fisioterapeuta->id,
                 ]
             );
